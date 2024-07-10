@@ -5,13 +5,15 @@ export interface Message extends Document {
   createdAt: Date;
 }
 
-const MessageSchema = new Schema({
+const MessageSchema: Schema<Message> = new Schema({
   content: {
     type: String,
     required: true,
   },
   createdAt: {
     type: Date,
+    required: true,
+    default: Date.now,
   },
 });
 
@@ -20,49 +22,52 @@ export interface User extends Document {
   email: string;
   password: string;
   verifyCode: string;
-  verfieTokenExpiry: Date;
-  isVerified: true;
+  verifyCodeExpiry: Date;
+  isVerified: boolean;
   isAcceptingMessages: boolean;
   messages: Message[];
 }
 
-const UserSchema = new Schema({
+const UserSchema: Schema<User> = new Schema({
   username: {
     type: String,
-    required: [true, "username is required!"],
+    required: [true, "Username is required!"],
+    trim: true,
     unique: true,
   },
   email: {
     type: String,
-    required: [true, "email is required!"],
+    required: [true, "Email is required!"],
     unique: true,
+    match: [/.+\@.+\..+/, "Please use a valid email address"],
   },
   password: {
     type: String,
-    required: [true, "password is required!"],
+    required: [true, "Password is required!"],
     min: [6, "Password must be at least 6 characters long!"],
     max: [20, "Password must be between 6-20 characters!"],
   },
-  verifyToken: {
+  verifyCode: {
     type: String,
-    required: true,
+    required: [true, "Verification code is required!"],
   },
-  verifyTokenExpiry: {
+  verifyCodeExpiry: {
     type: Date,
-    required: true,
-    default: Date.now,
+    required: [true, "Verification code expiry is required!"],
   },
   isVerified: {
     type: Boolean,
     default: false,
   },
-  isAcceptingMessage: {
+  isAcceptingMessages: {
     type: Boolean,
-    defauly: true,
+    default: true,
   },
-  messages: Schema<Message>,
+  messages: [MessageSchema],
 });
 
-const User = mongoose.models.users || mongoose.model<User>("User", UserSchema);
+const User =
+  (mongoose.models.users as mongoose.Model<User>) ||
+  mongoose.model<User>("User", UserSchema);
 
 export default User;
