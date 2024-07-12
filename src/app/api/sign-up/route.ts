@@ -2,6 +2,7 @@ import dbConnect from "@/lib/dbConnect";
 import User from "@/model/user.model";
 import bcryptjs from "bcryptjs";
 import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
+import { ErrorResponse, SuccessResponse } from "@/utils/responseUtils";
 
 export async function POST(request: Request) {
   await dbConnect();
@@ -10,10 +11,7 @@ export async function POST(request: Request) {
     const { email, username, password } = await request.json();
 
     if (!(email && username && password)) {
-      return Response.json(
-        { success: false, message: "Missing required fields" },
-        { status: 400 }
-      );
+      return ErrorResponse("Missing required fields!");
     }
 
     const existingVerifiedUserByUsername = await User.findOne({
@@ -22,10 +20,7 @@ export async function POST(request: Request) {
     });
 
     if (existingVerifiedUserByUsername) {
-      return Response.json(
-        { success: false, message: "Username already taken!" },
-        { status: 400 }
-      );
+      return ErrorResponse("Username already taken!");
     }
 
     const existingUserByEmail = await User.findOne({
@@ -35,10 +30,7 @@ export async function POST(request: Request) {
 
     if (existingUserByEmail) {
       if (existingUserByEmail.isVerified) {
-        return Response.json(
-          { success: false, message: "User already exists with this email!" },
-          { status: 400 }
-        );
+        return ErrorResponse("User already exists with this email!");
       } else {
         const hashedPassword = await bcryptjs.hash(password, 10);
 
@@ -75,28 +67,13 @@ export async function POST(request: Request) {
     console.log(emailResponse);
 
     if (!emailResponse.success) {
-      return Response.json(
-        { success: false, message: emailResponse.message },
-        { status: 500 }
-      );
+      return ErrorResponse(emailResponse.message, 500);
     }
 
-    return Response.json(
-      {
-        success: true,
-        message: "User registered successfully! Verify you email now.",
-      },
-      { status: 200 }
+    return SuccessResponse(
+      "User registered successfully! Verify you email now."
     );
   } catch (error) {
-    return Response.json(
-      {
-        success: false,
-        message: "Error registering user!",
-      },
-      {
-        status: 500,
-      }
-    );
+    return ErrorResponse("Error registering user!", 500);
   }
 }
