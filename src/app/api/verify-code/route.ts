@@ -15,7 +15,8 @@ export async function POST(request: Request) {
       return ErrorResponse("User not found with given username!", 404);
     }
 
-    const codeValidationResult = verifySchema.safeParse(code);
+    const codeValidationResult = verifySchema.safeParse({ code });
+
     if (!codeValidationResult.success) {
       const codeErrors =
         codeValidationResult.error.format().code?._errors || [];

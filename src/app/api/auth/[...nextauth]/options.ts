@@ -9,14 +9,19 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "text" },
+        identifier: { label: "Email/Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials: any): Promise<any> {
         await dbConnect();
 
         try {
-          const user = await User.findOne({ email: credentials.identifier });
+          const user = await User.findOne({
+            $or: [
+              { email: credentials.identifier },
+              { username: credentials.identifier },
+            ],
+          });
 
           if (!user) throw new Error("No user found with this email!");
 

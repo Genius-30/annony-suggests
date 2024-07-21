@@ -12,7 +12,6 @@ import { ApiResponse } from "@/Types/ApiResponse";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -20,7 +19,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CircleCheck, CircleCheckBig, CircleX, Loader2 } from "lucide-react";
+import { CircleCheckBig, CircleX, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 const Signup = () => {
