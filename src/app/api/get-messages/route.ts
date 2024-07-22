@@ -1,6 +1,7 @@
 import dbConnect from "@/lib/dbConnect";
 import { getServerSession, User as typeUser } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/options";
+import mongoose from "mongoose";
 import { ErrorResponse, SuccessResponse } from "@/utils/responseUtils";
 import User from "@/model/user.model";
 
@@ -8,21 +9,24 @@ export async function GET(request: Request) {
   await dbConnect();
 
   const session = await getServerSession(authOptions);
-  const user: typeUser = session?.user as typeUser;
+  const _user: typeUser = session?.user as typeUser;
 
-  if (!session || !session.user) {
+  if (!session || !_user) {
     return ErrorResponse("Not Authenticated!", 401);
   }
 
-  const userId = user._id;
+  const userId = new mongoose.Types.ObjectId(_user._id);
 
   try {
-    const user = await User.aggregate([
+    const userMessages = await User.aggregate([
       {
         $match: { _id: userId },
       },
       {
-        $unwind: "$messages",
+        $unwind: {
+          path: "$messages",
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $sort: { "messages.createdAt": -1 },
@@ -33,13 +37,16 @@ export async function GET(request: Request) {
           messages: { $push: "$messages" },
         },
       },
-    ]);
+    ]).exec();
 
-    if (!user || user.length === 0) {
+    if (!userMessages || userMessages.length === 0) {
       return ErrorResponse("User not found!", 404);
     }
-    return SuccessResponse("Messages fetched successfully!", user[0].messages);
+    return SuccessResponse(
+      "Messages fetched successfully!",
+      userMessages[0].messages
+    );
   } catch (error) {
-    return ErrorResponse("Error updating accepting messages status!", 500);
+    return ErrorResponse("Error fetching messages!", 500);
   }
 }
