@@ -1,7 +1,7 @@
 import React from "react";
 
 const Username = () => {
-  return <div>Home</div>;
+  return <div>User</div>;
 };
 
 export default Username;
