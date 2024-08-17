@@ -1,5 +1,5 @@
 import User, { IMessage } from "@/model/user.model";
-import { ErrorResponse } from "@/utils/responseUtils";
+import { ErrorResponse, SuccessResponse } from "@/utils/responseUtils";
 
 export async function POST(request: Request) {
   try {
@@ -9,7 +9,7 @@ export async function POST(request: Request) {
       return ErrorResponse("Username is missing!", 400);
     }
 
-    if (content.length === 0) {
+    if (!content || content.trim().length === 0) {
       return ErrorResponse("Content is missing!", 400);
     }
 
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     user.messages.push(newMessage as IMessage);
     await user.save();
 
-    return { message: "Message sent successfully!" };
+    return SuccessResponse("Message sent successfully!");
   } catch (error) {
     return ErrorResponse(
       "Something went wrong while sending the message!",
